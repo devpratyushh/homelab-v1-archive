@@ -5,137 +5,103 @@
 ![Host: Ubuntu](https://img.shields.io/badge/Host-Ubuntu_24.04_LTS-orange?style=flat-square)
 ![Uptime: 9 Days](https://img.shields.io/badge/Final_Uptime-9_Days-success?style=flat-square)
 
-> **⚠️ ARCHIVE NOTICE:** This project is no longer active. It represents the "Proof of Concept" state of my homelab infrastructure from **July 2024 to July 2025**. All services and data have been migrated to a dedicated **TrueNAS Scale** machine (Ghar Labs v2) for ZFS data integrity and enterprise-grade redundancy.
+> **⚠️ ARCHIVE NOTICE:** This project is no longer active. It represents the "Proof of Concept" state of my homelab infrastructure from **July 2024 to July 2025**. All services and data have been migrated to a dedicated **TrueNAS Scale** machine (Ghar Labs v2) for enterprise-grade redundancy.
 
 ---
 
-## 📖 The Origin Story: Escaping the "Ecosystem Trap"
+<div align="center">
+  <h2>🗺️ Project Architecture & Evolution Mind Map</h2>
+  <img src="./Screenshots/project-mindmap.png" width="800" alt="Project Mind Map spanning research to implementation">
+  <br>
+  *(Fig 1: A high-level visualization of the research pathways, technology stack choices, and final architecture of the v1 prototype)*
+</div>
 
-In **July 2024**, my digital life was fragmented across incompatible ecosystems. I was juggling an **iPad**, a **Windows PC**, and an **Android phone**. Moving a simple PDF or 4K video file between them was a friction-filled nightmare of cables and cloud upload limits.
+---
 
-I had a spare **500GB hard drive**, a virtualization host, and a simple goal: **Centralize the data.**
+## 📖 The Origin Story
 
-The project began as a basic NAS (Network Attached Storage). However, "scope creep" set in immediately. I realized that if the server was always on for file storage, it could also:
-1.  **Automate Media:** Replace paid streaming services with a self-hosted "Netflix" (Jellyfin).
-2.  **Sovereign Cloud:** Replace Google Drive with a private cloud (Nextcloud).
-3.  **Secure Vault:** Host my own password manager (Vaultwarden).
+In **July 2024**, I had a spare **500GB hard drive**, a virtualization host, and a goal to centralize my fragmented digital life.
 
-Thus, **Ghar Labs** was born.
+The project began as a basic NAS but "scope creep" turned it into a monolithic microservices host running:
+1.  **Media Automation:** Jellyfin + *Arr stack.
+2.  **Sovereign Cloud:** Nextcloud for file sync.
+3.  **Observability:** A mix of Prometheus, Grafana, and **Netdata** for real-time monitoring.
 
 ---
 
 ## 🏗️ Technical Architecture
 
-This system ran as a monolithic **Ubuntu Server 24.04 LTS** virtual machine, orchestrating 10+ microservices via **Docker Compose**.
+This system ran as a single **Ubuntu Server 24.04 LTS** virtual machine, orchestrating 10+ containers via Docker Compose.
 
-### Infrastructure Specs
 * **Hypervisor:** Oracle VirtualBox (Windows Host).
-* **Guest OS:** Ubuntu Server 24.04 LTS.
-* **Resources:** 4 vCPUs, 4GB RAM.
-* **Network:** Bridged Adapter Mode (Static IP: `192.168.29.5`).
-* **Storage:** 500GB Virtual Disk (`.vDI`) mounted at `/mnt/data`.
-
-### The "Access Strategy" (Bypassing CGNAT)
-One of the biggest engineering challenges was my ISP's use of **CGNAT (Carrier-Grade NAT)**, which made the server invisible to the public internet (no public IP). Standard port forwarding was impossible.
-
-We engineered a **Hybrid Access Model** to solve this:
-
-| Access Type | Tool Used | Technology | Use Case |
-| :--- | :--- | :--- | :--- |
-| **Public Web** | **Cloudflare Tunnel** | `cloudflared` (Zero Trust) | Exposing HTTP services (Jellyfin, Nextcloud) to friends/family via `https://movies.gharlab.com`. |
-| **Admin/File** | **Tailscale** | Mesh VPN (WireGuard) | Direct, high-speed SMB file transfers and SSH access from iPad/Laptop without exposing ports. |
+* **Resources:** 4 vCPUs, 4GB RAM allocated.
+* **Networking:** Bridged Adapter + Cloudflare Tunnels (for public HTTP) + Tailscale (for private SMB/SSH).
 
 ---
 
-## ⚙️ The "Unified Storage" Pattern
+## 🗳️ The "Unified Storage" Pattern
 
-We avoided duplicate files and permission errors by pointing both the Downloader (qBittorrent) and the Player (Jellyfin) to the **exact same physical directory**.
+We avoided duplicate files by pointing the downloader and media player to the same physical directory, using strict PUID/PGID (User 1000) permissions to prevent access errors.
 
-**The Directory Structure:**
+**Directory Structure:**
 ```bash
-/mnt/data/
-├── media/              <-- The "One Folder to Rule Them All"
-│   ├── movies/         # qBittorrent downloads here -> Jellyfin plays from here
-│   └── shows/
-└── nextcloud/          # Private Cloud Data
+/mnt/data/media/
+├── movies/         # qBittorrent downloads directly here
+└── shows/          # Jellyfin reads directly from here ```
+
+📊 Monitoring & Observability (Netdata)
+To keep track of system health on constrained resources, I utilized Netdata for real-time, high-resolution monitoring and alerting.
+
+<div align="center"> <img src="./Screenshots/netdata-dash.png" width="800" alt="Netdata Dashboard showing CPU spikes">
 
 
-Here is the Markdown content starting from the **Unified Storage / Docker Volume** section to the end of the file.
+(Fig 2: The Netdata dashboard revealing CPU context switch spikes during heavy I/O operations)
 
-```markdown
-## ⚙️ The "Unified Storage" Pattern
 
-We avoided duplicate files and permission errors by pointing both the Downloader (qBittorrent) and the Player (Jellyfin) to the **exact same physical directory**.
 
-**The Directory Structure:**
-```bash
-/mnt/data/
-├── media/              <-- The "One Folder to Rule Them All"
-│   ├── movies/         # qBittorrent downloads here -> Jellyfin plays from here
-│   └── shows/
-└── nextcloud/          # Private Cloud Data
+<img src="./Screenshots/netdata-alert.png" width="600" alt="Netdata Email Alert">
 
-```
 
-**Docker Volume Mapping:**
+(Fig 3: Automated email alerts configured for sustained high CPU usage) </div>
 
-* **qBittorrent:** `/mnt/data/media:/downloads`
-* **Jellyfin:** `/mnt/data/media:/media`
-* *Result:* As soon as a download finishes, it instantly appears in Jellyfin without needing to be moved or copied.
+🧠 Research & Engineering Logs
+This infrastructure is the result of 46+ documented research sessions.
 
----
+📂 Click Here to View the Detailed Debugging Journey
+Read the full logs on bypassing CGNAT, fixing broken installations, and engineering custom Cloudflare error pages.
 
-##📦 The Software Stack (Verified)All services were containerized using Docker. Below is the verified state of the stack at the time of decommissioning (July 2025).
+🛡️ Resilience & Challenges (Post-Mortem Audit)
+Before decommissioning the VM in July 2025, I performed a final audit. The system was functional but brittle.
 
-| Category | Service | Container Name | Purpose | Status (Final Audit) |
-| --- | --- | --- | --- | --- |
-| **Media** | **Jellyfin** | `jellyfin` | Media Streaming Server | 🟢 Online |
-| **Downloads** | **qBittorrent** | `qbittorrent` | Automated Torrent Client | 🟢 Up 9 Days |
-| **Management** | **Bazarr** | `bazarr` | Subtitle Synchronization | 🟢 Up 9 Days |
-| **Cloud** | **Nextcloud** | `nextcloud-project_app` | File Sync & Share | 🟢 Up 9 Days |
-| **Database** | **MySQL/Redis** | `nextcloud-db` | Backend for Nextcloud | 🟢 Up 9 Days |
-| **Security** | **Vaultwarden** | `vaultwarden` | Bitwarden Password Manager | 🟢 Up 9 Days |
-| **Dashboard** | **Homepage** | `homepage` | System Dashboard | 🟢 Up 9 Days |
-| **Monitoring** | **Prometheus** | `prometheus` | Metrics Collection | 🟢 Up 9 Days |
-| **Monitoring** | **Grafana** | `grafana` | Data Visualization | 🔴 **Crashed (Exited 255)** |
-| **Mgmt** | **Portainer** | `portainer` | Docker GUI | 🟢 Up 9 Days |
+🛑 Challenge 1: The "Zombie" Process Leak
+Over weeks of uptime, RAM usage would creep up despite low CPU load. The terminal login screen gave the first clue, and a subsequent htop audit revealed the root cause: Docker containers were not reaping child processes correctly, leading to a growing list of "zombies."
 
----
+<div align="center"> <img src="./Screenshots/terminal-login.png" width="700" alt="Ubuntu Login screen showing zombie processes">
 
-##🛡️ Resilience & Engineering ChallengesBuilding v1 wasn't just about installing software; it was a battle against network restrictions and resource constraints.
 
-###🛑 Challenge 1: The "Invisible Server" (CGNAT)> **The Obstacle:** My ISP placed the network behind a Carrier-Grade NAT. The server had no public IP, making it impossible to access from outside the house.
-> **The Solution:** We deployed **Cloudflare Tunnels**. By running a lightweight daemon (`cloudflared`) inside the Ubuntu VM, we established an outbound connection to Cloudflare's edge, allowing us to route traffic to `*.gharlab.com` without opening a single port on the router.
+(Fig 4: The login message explicitly warning about "2 zombie processes")
 
-###🛑 Challenge 2: The Zombie Process Leak> **The Obstacle:** Over weeks of uptime, the server's RAM usage would creep up, and performance would degrade, requiring manual reboots.
-> **The Diagnosis:** A final audit via `top` revealed **28 Zombie Processes**. The Docker monitoring stack was creating child processes that never exited cleanly, slowly consuming the PID table. This taught me the importance of PID limits in Docker Compose.
 
-###🛑 Challenge 3: VPN Handshake Failures> **The Obstacle:** Initial attempts to use raw WireGuard failed because the handshake packets were being dropped by the ISP's aggressive firewall settings.
-> **The Solution:** We pivoted to **Tailscale**. Its ability to use DERP (Designated Encrypted Relay for Packets) servers meant that even if a direct P2P connection failed, the traffic would still route securely through a relay, ensuring 100% uptime for admin access.
 
----
+<img src="./Screenshots/htop-audit.png" width="700" alt="htop showing system load">
 
-##📸 Post-Mortem & Final Audit**Date:** July 24, 2025
 
-**Evidence:** Terminal Screenshots (Archived in `/docs/images`)
+(Fig 5: The final htop audit showing moderate load but increasing memory pressure) </div>
 
-Before decommissioning the VM, I performed a final system audit. The state of the machine perfectly summarized why a migration was necessary.
+🛑 Challenge 2: Service Fragility (Grafana Crash)
+While core services (Jellyfin, Nextcloud) remained stable, heavier JVM/Go-based tools struggled on the 4GB RAM allocation. The final docker audit confirmed that our primary visualization tool, Grafana, had silently crashed.
 
-###1. System Health (Stress Test)* **Load Average:** `0.74` (Moderate load for a dual-core VM).
-* **Memory Pressure:** `39%` of 4GB used. The "Zombie Processes" were evident in the process tree, indicating a slow resource leak that would eventually crash the system.
-* ![Terminal showing 28 zombie processes and memory usage](./assets/screenshots/terminal-zombie-processes.png)
+<div align="center"> <img src="./Screenshots/docker-ps-crash.png" width="800" alt="docker ps output showing Grafana crashed">
 
-###2. Service Fragility* **Grafana Crash:** As seen in the logs, the `grafana` container had exited with **Code 255**. This proved that running a heavy JVM/Go-based observability stack on a resource-constrained VirtualBox VM was too fragile for production use.
-![Docker PS command showing Grafana crash](./assets/screenshots/docker-ps-output.png)
 
-###3. The "Single Point of Failure"* The most critical flaw was architectural. The entire lab lived on a single 500GB virtual disk (`.vdi`). There was no RAID, no ZFS bit-rot protection, and no snapshots. One corruption event would have wiped 1TB of data.
+(Fig 6: docker ps -a output confirming Grafana exited with code 255 six months ago) </div>
 
-> **Final Verdict:** Ghar Labs v1 was a successful Proof of Concept, but it lacked the data integrity required for a permanent home server. This necessity drove the migration to **TrueNAS Scale (v2)**.
+🛑 Final Verdict: The Single Point of Failure
+The most critical flaw was architectural. The entire lab lived on one virtual disk (.vdi). There was no ZFS bit-rot protection and no RAID. A single host crash could corrupt 1TB of data.
 
----
+📉 Conclusion: The Move to TrueNAS
+Ghar Labs v1 was a successful Proof of Concept that taught me Docker networking and Linux administration. However, the evidence above—zombie processes, silent service crashes, and lack of redundancy—made it clear it was not production-ready.
 
-*Maintained by Pratyush | 2024-2025*
+All services have been migrated to Ghar Labs v2 (TrueNAS Scale).
 
-```
-
-```
+Maintained by Pratyush | 2024-2025
