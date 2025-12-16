@@ -54,11 +54,27 @@ The server wasn't just backend code; it was a fully functional home cloud. Here 
 <div align="center">
   <img src="docs/Screenshots/jellyfin.png" height="200" alt="Jellyfin Media Server">
   <img src="docs/Screenshots/qbittorrent.png" height="200" alt="qBittorrent Web UI">
-  <img src="docs/Screenshots/nextcloud.png" height="200" alt="Nextcloud Dashboard">
 </div>
 <div align="center">
   <i>(Fig: The "Holy Trinity" of self-hosting: Media, Downloads, and Cloud Storage)</i>
 </div>
+
+## 📦 The Software Stack (Verified)
+
+All services were containerized using Docker. Below is the verified state of the stack at the time of decommissioning (July 2025).
+
+| Category | Service | Container Name | Purpose | Status (Final Audit) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Media** | **Jellyfin** | `jellyfin` | Media Streaming Server | 🟢 Online |
+| **Downloads** | **qBittorrent** | `qbittorrent` | Automated Torrent Client | 🟢 Up 9 Days |
+| **Management** | **Bazarr** | `bazarr` | Subtitle Synchronization | 🟢 Up 9 Days |
+| **Cloud** | **Nextcloud** | `nextcloud-project_app` | File Sync & Share | 🟢 Up 9 Days |
+| **Database** | **MySQL/Redis** | `nextcloud-db` | Backend for Nextcloud | 🟢 Up 9 Days |
+| **Security** | **Vaultwarden** | `vaultwarden` | Bitwarden Password Manager | 🟢 Up 9 Days |
+| **Dashboard** | **Homepage** | `homepage` | System Dashboard | 🟢 Up 9 Days |
+| **Monitoring** | **Prometheus** | `prometheus` | Metrics Collection | 🟢 Up 9 Days |
+| **Monitoring** | **Grafana** | `grafana` | Data Visualization | 🔴 **Crashed (Exited 255)** |
+| **Mgmt** | **Portainer** | `portainer` | Docker GUI | 🟢 Up 9 Days |
 
 ## 🗳️ The "Unified Storage" Pattern
 
@@ -66,9 +82,11 @@ We avoided duplicate files by pointing the downloader and media player to the sa
 
 **Directory Structure:**
 ```bash
-/mnt/data/media/
-├── movies/         # qBittorrent downloads directly here
-└── shows/          # Jellyfin reads directly from here
+/mnt/data/
+├── media/              <-- The "One Folder to Rule Them All"
+│   ├── movies/         # qBittorrent downloads here -> Jellyfin plays from here
+│   └── shows/
+└── nextcloud/          # Private Cloud Data
 ```
 
 📊 Monitoring & Observability (Netdata)
