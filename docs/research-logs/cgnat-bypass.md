@@ -1,56 +1,75 @@
-# 🕵️ Research Log: The Journey to Connectivity
+# 🕵️ Research Log: The Evolution of Connectivity
 
 **Objective:** Host a private cloud and media server behind ISP-grade NAT (CGNAT).
-**Tools Used:** Claude 3.5 Sonnet, Ubuntu Terminal.
-
-## 1. Solving the "Invisible Server" Problem (CGNAT)
-
-My ISP does not provide a public IP address, making standard Port Forwarding impossible. I consulted Claude to find "Reverse Tunneling" solutions.
-
-### The Initial Inquiry
-I needed a way to expose local ports without router access. Claude suggested Ngrok, Cloudflare Tunnels, or ZeroTier.
-
-![Asking Claude about CGNAT bypass options](/docs/research-logs/images/image_7fb923.png)
-*(Fig 1: Exploring the concept of "Reverse Tunneling" to bypass ISP restrictions)*
-
-### The "ZeroTier" Experiment
-Initially, I was skeptical of Cloudflare's privacy ("sketchy") and explored **ZeroTier** as a decentralized alternative. This conversation guided my first attempts at setting up a virtual LAN before I eventually settled on the Cloudflare/Tailscale hybrid stack.
-
-![Claude guiding the ZeroTier setup](/docs/research-logs/images/image_7fb92a.png)
-*(Fig 2: Configuring ZeroTier as a potential alternative to Cloudflare)*
+**Tools Used:** Claude 3.5 Sonnet, Ubuntu Terminal, Cron, WireGuard.
 
 ---
 
-## 2. Debugging Log: The "HTML in Disguise" Error
+## 1. Attempt #1: The "Manual" Way (DuckDNS + WireGuard)
+**Status:** 🔴 Abandoned (Too Fragile)
 
-**Incident:** Failed installation of the Cloud storage application (OwnCloud/Nextcloud).
-**Error:** `tar: Child returned status 2` / `bzip2: (stdin) is not a bzip2 file`.
+Before discovering Zero Trust tunnels, I attempted to build a traditional VPN access point using Dynamic DNS.
 
-### The Log Evidence
-During the initial setup script, the extraction command kept failing despite the file appearing to download successfully.
+### The Scripting
+I wrote a custom Bash script hooked into `cron` to update my dynamic IP every 5 minutes.
+![Cron job for DuckDNS updates](./docs/research-logs/images/duckDnsApproach.webp)
+*(Fig 1: The manual `cron` job used to sync dynamic IPs with DuckDNS)*
 
-![Terminal screenshot showing tar command failure](/docs/Screenshots/debugging/failureInNextcloudInstallation.webp)
-*(Fig 3: The `tar` command failing to extract the downloaded archive)*
-
-### 🔍 The Fix (Post-Mortem)
-Looking closely at the screenshot (Line 12), the content type was `[text/html]` and the file size was only `5.62K`.
-* **The Cause:** `wget` downloaded the **HTML redirect page** instead of the actual `.tar.bz2` file because the download link had moved.
-* **The Lesson:** Always check `content-type` headers when `wget` scripts fail silently. I switched to the correct URL and the installation proceeded.
+### The Failure Point
+I tried to pair this with a raw WireGuard installation. However, because my ISP puts me behind a double NAT (CGNAT), the incoming UDP packets for the WireGuard handshake were constantly dropped, leading to an unstable connection.
+![Claude guiding WireGuard setup](./docs/research-logs/images/image_7f39bf.png)
+*(Fig 2: Attempting to configure raw WireGuard keys before realizing port forwarding was blocked)*
 
 ---
 
-## 3. UX Polish: The Cloudflare "Ugly Error" Frustration
+## 2. Attempt #2: The "Tunnel" Breakthrough (Cloudflare)
+**Status:** 🟢 Success
 
-**Incident:** Dealing with the generic 52x error pages.
-**Context:** Whenever I turned the server off for maintenance (or when it crashed), visitors (family/friends) would see a terrifying "Cloudflare Host Error" page. It looked broken, not "under maintenance."
+Realizing that *incoming* connections were blocked, I pivoted to "Reverse Tunneling" technologies that rely on *outbound* connections.
 
-### The Limitation
-I wanted to replace this with a custom "Server Sleeping" page, but Cloudflare locks custom error pages behind the Enterprise plan. This led to significant frustration as I tried to find a workaround for a Free Tier user.
+### Exploring Options
+I consulted AI to find alternatives to port forwarding. We evaluated Ngrok, ZeroTier, and Cloudflare.
+![Asking Claude about CGNAT bypass options](/docs/research-logs/images/claudeChat_1.png)
+*(Fig 3: Exploring the concept of "Reverse Tunneling")*
 
-![Discussing custom error pages with Claude](/docs/research-logs//images/cludeChat_3.png)
-*(Fig 4: Seeking a workaround for Cloudflare's rigid error page policies)*
+### The ZeroTier Pivot
+I initially set up a mesh network using ZeroTier to bypass the router restrictions entirely.
+![Claude guiding the ZeroTier setup](/docs/research-logs/images/claudeChat_2.png)
+*(Fig 4: Configuring the initial mesh network)*
 
-### 💡 The Workaround Strategy
-Claude suggested three paths:
-1.  **Static Fallback:** Hosting a simple HTML page on a separate, always-on lightweight server (like a Raspberry Pi or VPS).
-2.  **Cloudflare Workers:** Using edge scripting to intercept the 520/522 errors and serve a custom HTML response directly from the edge, bypassing the origin server entirely.
+---
+
+## 3. Debugging: The "Phantom File" Incident
+**Status:** 🟢 Resolved
+
+During the installation of the Nextcloud stack, I encountered a critical failure in the extraction process.
+
+### The Error
+The `tar` command failed with "not a bzip2 file" despite a successful download message.
+![Terminal screenshot showing tar command failure](./docs/Screenshots/debugging/failureInNextcloudInstallation.webp)
+*(Fig 5: The breakdown of the installation script)*
+
+### The Fix
+I analyzed the file header in the terminal output. It was `[text/html]` with a size of only `5.62K`. The download link was actually a **webpage redirect**, not the file itself. I corrected the URL to point to the raw binary, solving the issue.
+
+---
+
+## 4. Product Polish: The "Ugly Error" Fix
+**Status:** 🟡 Workaround Implemented
+
+I wasn't satisfied with just "it works"; I wanted it to look professional. When the server was down, Cloudflare served a generic error page.
+
+![Discussing custom error pages with Claude](/docs/research-logs/images/claudeChat_3.png)
+*(Fig 6: Trying to engineer a custom "Maintenance Mode" page on the Free Tier)*
+
+---
+
+## 🧠 The Volume of Research
+
+This infrastructure was built on the back of **46+ recorded debugging sessions** and hundreds of hours of trial and error.
+
+![Search History showing 46 chats](/docs/research-logs/images/claudeConsole.png)
+*(Fig 7: A snapshot of the knowledge base built during development)*
+
+![Sidebar showing diverse topics](/docs/research-logs/images/claudeSidebar.png)
+*(Fig 8: Scope of work covering everything from DNS Sinkholes to Hardware Repurposing)*
