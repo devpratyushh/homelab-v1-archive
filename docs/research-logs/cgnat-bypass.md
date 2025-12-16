@@ -17,7 +17,7 @@ I wrote a custom Bash script hooked into `cron` to update my dynamic IP every 5 
 
 ### The Failure Point
 I tried to pair this with a raw WireGuard installation. However, because my ISP puts me behind a double NAT (CGNAT), the incoming UDP packets for the WireGuard handshake were constantly dropped, leading to an unstable connection.
-![Claude guiding WireGuard setup](./docs/research-logs/images/image_7f39bf.png)
+![Claude guiding WireGuard setup](/docs/research-logs/images/claudeChat_0.png)
 *(Fig 2: Attempting to configure raw WireGuard keys before realizing port forwarding was blocked)*
 
 ---
