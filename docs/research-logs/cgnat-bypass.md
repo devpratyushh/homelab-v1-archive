@@ -44,6 +44,12 @@ I initially set up a mesh network using ZeroTier to bypass the router restrictio
 <br>
 *(Fig 4: Configuring the initial mesh network)*
 
+### The Final Cloudflared Tunnel Implementation  
+The final fix came in the form of the implementation of cloudflare tunnel using my custom domain name *patyux.me* using subdomains for different services mapped to their specific ports.
+<img src="./images/tunnels.png" width="450" alt="Claude guiding the ZeroTier setup">
+
+This lead to *REMOTE ACCESS* of important services shifting it from just a NAS to a full fledged Homelab. 
+<br>
 ---
 
 ## 3. Debugging: The "Phantom File" Incident
