@@ -38,7 +38,27 @@ This system ran as a single **Ubuntu Server 24.04 LTS** virtual machine, orchest
 * **Networking:** Bridged Adapter + Cloudflare Tunnels (for public HTTP) + Tailscale (for private SMB/SSH).
 
 ---
-<hr> 
+## 🌐 Networking & CGNAT Research
+
+One of the biggest engineering challenges was my ISP's use of **CGNAT (Carrier-Grade NAT)**, which made the server invisible to the public internet.
+
+### 📂 [Read the Deep Dive: Bypassing CGNAT](./docs/research-logs/setup-journey.md)
+*A comprehensive log of how I used AI to engineer a split-tunneling solution using **Cloudflare Tunnels** (Public) and **Tailscale** (Private).*
+
+---
+
+## 📸 The Lab in Action (Service Gallery)
+
+The server wasn't just backend code; it was a fully functional home cloud. Here are the core services that ran 24/7.
+
+<div align="center">
+  <img src="docs/Screenshots/jellyfin.png" height="200" alt="Jellyfin Media Server">
+  <img src="docs/Screenshots/qbittorrent.png" height="200" alt="qBittorrent Web UI">
+  <img src="docs/Screenshots/nextcloud.png" height="200" alt="Nextcloud Dashboard">
+</div>
+<div align="center">
+  <i>(Fig: The "Holy Trinity" of self-hosting: Media, Downloads, and Cloud Storage)</i>
+</div>
 
 ## 🗳️ The "Unified Storage" Pattern
 
