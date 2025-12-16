@@ -10,13 +10,13 @@ My ISP does not provide a public IP address, making standard Port Forwarding imp
 ### The Initial Inquiry
 I needed a way to expose local ports without router access. Claude suggested Ngrok, Cloudflare Tunnels, or ZeroTier.
 
-![Asking Claude about CGNAT bypass options](./images/image_7fb923.jpg)
+![Asking Claude about CGNAT bypass options](/docs/research-logs/images/image_7fb923.jpg)
 *(Fig 1: Exploring the concept of "Reverse Tunneling" to bypass ISP restrictions)*
 
 ### The "ZeroTier" Experiment
 Initially, I was skeptical of Cloudflare's privacy ("sketchy") and explored **ZeroTier** as a decentralized alternative. This conversation guided my first attempts at setting up a virtual LAN before I eventually settled on the Cloudflare/Tailscale hybrid stack.
 
-![Claude guiding the ZeroTier setup](./images/image_7fb92a.jpg)
+![Claude guiding the ZeroTier setup](/docs/research-logs/images/image_7fb92a.jpg)
 *(Fig 2: Configuring ZeroTier as a potential alternative to Cloudflare)*
 
 ---
@@ -47,7 +47,7 @@ Looking closely at the screenshot (Line 12), the content type was `[text/html]` 
 ### The Limitation
 I wanted to replace this with a custom "Server Sleeping" page, but Cloudflare locks custom error pages behind the Enterprise plan. This led to significant frustration as I tried to find a workaround for a Free Tier user.
 
-![Discussing custom error pages with Claude](./images/cludeChat_3.jpg)
+![Discussing custom error pages with Claude](/docs/research-logs//images/cludeChat_3.jpg)
 *(Fig 4: Seeking a workaround for Cloudflare's rigid error page policies)*
 
 ### 💡 The Workaround Strategy
