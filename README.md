@@ -54,7 +54,7 @@ We avoided duplicate files by pointing the downloader and media player to the sa
 📊 Monitoring & Observability (Netdata)
 To keep track of system health on constrained resources, I utilized Netdata for real-time, high-resolution monitoring and alerting.
 
-<div align="center"> <img src="docs/Screenshots/netdata-dash.png" width="800" alt="Netdata Dashboard showing CPU spikes">
+<div align="center"> <img src="docs/Screenshots/netdata-dash.webp" width="800" alt="Netdata Dashboard showing CPU spikes">
 
 
 (Fig 2: The Netdata dashboard revealing CPU context switch spikes during heavy I/O operations)
