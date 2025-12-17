@@ -29,7 +29,7 @@ The project began as a basic NAS but "scope creep" turned it into a monolithic m
 
 ---
 
-## 🏗️ Technical Architecture
+##  Technical Architecture
 
 This system ran as a single **Ubuntu Server 24.04 LTS** virtual machine, orchestrating 10+ containers via Docker Compose.
 
@@ -38,16 +38,16 @@ This system ran as a single **Ubuntu Server 24.04 LTS** virtual machine, orchest
 * **Networking:** Bridged Adapter + Cloudflare Tunnels (for public HTTP) + Tailscale (for private SMB/SSH).
 
 ---
-## 🌐 Networking & CGNAT Research
+##  Networking & CGNAT Research
 
 One of the biggest engineering challenges was my ISP's use of **CGNAT (Carrier-Grade NAT)**, which made the server invisible to the public internet.
 
-### 📂 [Read the Deep Dive: Bypassing CGNAT](./docs/research-logs/setup-journey.md)
+###  [Read the Deep Dive: Bypassing CGNAT](./docs/research-logs/setup-journey.md)
 *A comprehensive log of how I used AI to engineer a split-tunneling solution using **Cloudflare Tunnels** (Public) and **Tailscale** (Private).*
 
 ---
 
-## 📸 The Lab in Action (Service Gallery)
+##  The Lab in Action (Service Gallery)
 
 The server wasn't just backend code; it was a fully functional home cloud. Here are the core services that ran 24/7.
 
@@ -59,7 +59,7 @@ The server wasn't just backend code; it was a fully functional home cloud. Here 
   <i>(Fig: The "Holy Trinity" of self-hosting: Media, Downloads, and Cloud Storage)</i>
 </div>
 
-## 📦 The Software Stack (Verified)
+##  The Software Stack (Verified)
 
 All services were containerized using Docker. Below is the verified state of the stack at the time of decommissioning (July 2025).
 
@@ -89,7 +89,7 @@ We avoided duplicate files by pointing the downloader and media player to the sa
 └── nextcloud/          # Private Cloud Data
 ```
 
-📊 Monitoring & Observability (Netdata)
+ Monitoring & Observability (Netdata)
 To keep track of system health on constrained resources, I utilized Netdata for real-time, high-resolution monitoring and alerting.
 
 <div align="center"> <img src="docs/Screenshots/netdata-dash.webp" width="800" alt="Netdata Dashboard showing CPU spikes">
@@ -117,7 +117,7 @@ Access the full setup-journey.md to see how we bypassed CGNAT, fixed broken inst
 
 <hr> 
 
-🛡️ Resilience & Challenges (Post-Mortem Audit)
+ Resilience & Challenges (Post-Mortem Audit)
 Before decommissioning the VM in July 2025, I performed a final audit. The system was functional but brittle.
 
 🛑 Challenge 1: The "Zombie" Process Leak
@@ -146,9 +146,10 @@ While core services (Jellyfin, Nextcloud) remained stable, heavier JVM/Go-based 
 🛑 Final Verdict: The Single Point of Failure
 The most critical flaw was architectural. The entire lab lived on one virtual disk (.vdi). There was no ZFS bit-rot protection and no RAID. A single host crash could corrupt 1TB of data.
 
-📉 Conclusion: The Move to TrueNAS
+ Conclusion: The Move to TrueNAS
 Ghar Labs v1 was a successful Proof of Concept that taught me Docker networking and Linux administration. However, the evidence above—zombie processes, silent service crashes, and lack of redundancy—made it clear it was not production-ready.
 
 All services have been migrated to Ghar Labs v2 (TrueNAS Scale).
 
+<hr><br>
 Maintained by Pratyush | 2024-2025
